@@ -1,0 +1,240 @@
+<html>
+    {% load static %}
+    <head>
+      <title>Recorder App</title>
+
+      <link href="{% static 'web/assets/dist/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css"> 
+      <link href="{% static 'web/css/dashboard.css' %}" rel="stylesheet" type="text/css">
+      
+      <link href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800,900" rel="stylesheet" type="text/css">
+      
+      <link rel="stylesheet" href="{% static 'web/css/owl.carousel.min.css' %}" type="text/css">
+      <link rel="stylesheet" href="{% static 'web/css/owl.theme.default.min.css' %}" type="text/css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/4.5.6/css/ionicons.min.css" type="text/css">
+      <link rel="stylesheet" href="{% static 'web/css/animate.css' %}" type="text/css">
+      <link rel="stylesheet" href="{% static 'web/css/style.css' %}" type="text/css">
+      <link rel="stylesheet" href="{% static 'assets/css/bulma.min.css' %}" />
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+  
+    </head>
+    {% comment %} <h2>Recorder App</h2> {% endcomment %}
+    <p hidden>
+      <button type="button" id="record">Record</button>
+      <button type="button" id="stopRecord" disabled>Stop</button>
+    </p>
+    <p>
+     <form method="POST"  enctype="multipart/form-data" hidden
+
+     >
+        {% csrf_token %}
+
+      <audio id=recordedAudio  name = 'recordedAudio'></audio>
+      <button class="button is-info" id="submit">Submit</button>
+      </form>
+    </p>
+
+
+      
+
+
+    <section class="section">
+        <div class="container">
+          <div class="columns">
+            <div class="column is-offset-4 is-4">
+              <h1 class="title">Record audio</h1>
+              <article class="message is-success" id="alert" hidden>
+                <div class="message-header">
+                  <p>Recorded successfully!</p>
+                  <button class="delete" aria-label="delete"></button>
+                </div>
+                <div class="message-body">
+                  You have successfully recorded your message. You can now click on
+                  the Submit button to post it.
+                </div>
+              </article>
+      
+              
+                
+
+
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      
+      <div class="container-xl">
+          <div class="row">
+              <div class="col-lg-8 mx-auto">
+                  <div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
+                      <div class="carousel-inner">
+                  {% for dd in step_data2 %}
+                    <div class="carousel-item" id = 'step-{{dd.page_no}}'>
+                      <div class="days-left position-relative">
+                        <div class="days-left-popup">
+                          <span id = 'time'> Time Left {{dd.duration_in_sec}}</span>
+                        </div>
+                      </div>
+                      <br>
+                      <br>
+                      
+                      {% for data in dd.question %}
+                          <h3 class="testimonial text-center">{{data}}</h3>
+                      {% endfor %}
+                    </div>
+                  {% endfor %}
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+      
+      
+      
+      <center>
+        {% for ls in step_range %}
+          {{ls}} 
+        {% endfor %}
+      <br>
+      
+      <button onclick="next()" class="nect" id = 'start-text' style = 'display:None;'>Start</button>
+      <button id = 'start-slide' onclick="start_slide()"> Start</button>
+      
+
+
+
+<!-- Audio Recording -->
+    <script>
+      navigator.mediaDevices.getUserMedia({audio:true})
+      .then(stream => {handlerFunction(stream)})
+      function handlerFunction(stream) {
+        rec = new MediaRecorder(stream);
+        rec.ondataavailable = e => {
+          audioChunks.push(e.data);
+          if (rec.state == "inactive"){
+            let blob = new Blob(audioChunks,{type:'audio/mp3'});
+            recordedAudio.src = URL.createObjectURL(blob);
+            recordedAudio.controls=true;
+            recordedAudio.autoplay=false;
+            sendData(blob)
+            console.log(blob)
+            var form = new FormData();
+            form.append('audio', blob);
+            console.log(form)
+            
+            $.ajax({
+                url: 'http://128.199.18.206:8000/new_record_/',
+                type: 'POST',
+                data: form,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    console.log(data)
+                    if (data == 'ok') {
+                      console.log("condition True ::::::::::::::::::")
+                    }
+                    window.location.replace(data);
+                    console.log('response' + JSON.stringify(data));
+                },
+                error: function () {
+                   // handle error case here
+                }
+            });
+            }
+          }
+        }
+      function sendData(data) {}
+        record.onclick = e => {
+          record.disabled = true;
+          record.style.backgroundColor = "blue"
+          stopRecord.disabled=false;
+          audioChunks = [];
+          rec.start();
+          }
+        stopRecord.onclick = e => {
+          record.disabled = false;
+          stop.disabled=true;
+          record.style.backgroundColor = "red"
+          rec.stop();
+          }
+    </script>
+<!-- Audio Recording -->
+
+
+
+    <script>
+        var page_number_list  = '{{page_number_list}}';
+        var counter           = 0;
+        page_number_list      = JSON.parse(page_number_list)
+      
+        function next(){
+      
+          if (counter<page_number_list.length )
+          {
+                document.getElementsByClassName('nect')[0].innerHTML = 'Next'
+                try {
+                  var current           = document.getElementsByClassName(" active");
+                  current[0].className  = current[0].className.replace(" active", "");            }
+                catch(err) {};
+      
+                id_                     = 'step-'+page_number_list[counter];
+                document.getElementById(id_).className += ' active';
+                counter++;
+          }
+          else if (counter===page_number_list.length )
+          {
+            document.getElementsByClassName('nect')[0].innerHTML = 'Finsh'
+            document.getElementById('stopRecord').click()
+            //document.getElementById('submit').click()
+            
+          }
+      
+      
+        }
+      
+      
+      
+      
+      
+        function sleep(ms) {
+          return new Promise(resolve => setTimeout(resolve, ms));
+      }
+      
+        function start_slide(){
+          document.getElementById('record').click();
+          document.getElementById("start-text").click();
+          document.getElementById("start-text").style.display = "block"; 
+          document.getElementById("start-slide").style.display = "None"; 
+      
+
+          
+        }
+        function end_slide(){
+          document.getElementsByClassName('stopRecord')[0].click()
+          //document.getElementById('submit').click()
+        }
+      
+      
+      
+
+
+    </script>
+
+
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'web/js/jquery-3.6.0.slim.min.js' %}" type="test/javascript"></script>
+    <script src="{% static 'web/js/jquery.min.js' %}" type="test/javascript"></script>
+    <script src="{% static 'web/js/jquery.dataTables.min.js' %}" type="test/javascript"></script>
+    <script src="{% static 'web/assets/dist/js/bootstrap.bundle.min.js' %}" type="test/javascript"></script>
+    <script src="{% static 'web/js/feather.min.js' %}" type="test/javascript"></script>
+    <script src="{% static 'web/js/dashboard.js' %}" type="test/javascript"></script>
+    <script src="{% static 'web/assets/dist/js/htmx.min.js' %}" type="test/javascript"></script>
+    <script src="{% static 'web/assets/dist/js/htmx.js' %}"     type="test/javascript"></script>
+    
+    <script src="{% static 'web/js/jquery.min.js' %}" type="test/javascript"></script>
+    <script src="{% static 'web/js/popper.js' %}" type="test/javascript"></script>
+    <script src="{% static 'web/js/bootstrap.min.js' %}" type="test/javascript"></script>
+    <script src="{% static 'web/js/owl.carousel.min.js' %}" type="test/javascript"></script>
+    <script src="{% static 'web/js/main.js' %}" type="test/javascript"></script>
+
+  </html>

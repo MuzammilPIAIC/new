@@ -1,0 +1,38 @@
+{% load static %}
+<!--url cache-->
+
+{% comment %}
+    
+{% url 'core:record' as record_url %}
+<!--url cache-->
+{% url 'core:index' as home_url %}
+{% endcomment %}
+
+<section class="hero is-info is-small">
+  <!-- Hero head: will stick at the top -->
+  <div class="hero-head">
+    <nav class="navbar">
+      <div class="container">
+        <div class="navbar-brand">
+          
+          <span class="navbar-burger" data-target="navbarMenuHeroA">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </div>
+        <div id="navbarMenuHeroA" class="navbar-menu">
+          <div class="navbar-end">
+            
+            
+            {% comment %}
+            <a class="navbar-item {% if request.path == record_url %} is-active {% endif %}" href="{% url 'core:record' %}"> Record </a>
+
+            {% endcomment %}
+                
+          </div>
+        </div>
+      </div>
+    </nav>
+  </div>
+</section>
