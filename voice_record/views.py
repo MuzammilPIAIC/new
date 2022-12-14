@@ -280,7 +280,7 @@ def text(request,id):
     total_common_words = ''
     new_dict = {}
     display = '0'
-    # text2 = ''
+    text2 = ''
     if str(text) == "None" or str(text) == "":
         display = '1'
         text2 = "We are converting your voice to text. click on 'Show Now' after 5 seconds"
